@@ -1,1 +1,47 @@
-<p>table-view works!</p>
+<div class="mat-table-wrapper">
+  <mat-table [dataSource]="matTableDataSource">
+    <ng-container
+      *ngFor="let col of displayedColumns; let i = index"
+      [matColumnDef]="col">
+      <mat-header-cell *matHeaderCellDef>
+        {{col || '?'}}
+      </mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        {{row[i] || '?'}}
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+
+  </mat-table>
+  <div *ngIf="showTableOverlay"
+    class="no-data">
+    <ng-container *ngIf="isLoading; else emptyData">
+      <mat-spinner
+        [diameter]="40">
+      </mat-spinner>
+    </ng-container>
+    <ng-template #emptyData>
+      <mat-icon
+        svgIcon="wind">
+      </mat-icon>
+      <h3>Data not found</h3>
+      <button
+        mat-flat-button
+        color="accent"
+        (click)="refreshData()">
+        Refresh table
+      </button>
+    </ng-template>
+  </div>
+</div>
+<mat-paginator
+  *ngIf="matTableDataSource?.data?.length"
+  [length]="totalCount"
+  [pageSizeOptions]="paginationSizeOption"
+  [showFirstLastButtons]="true"
+  [pageSize]="take"
+  (page)="onPageChanged($event)">
+</mat-paginator>

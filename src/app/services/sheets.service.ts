@@ -1,13 +1,14 @@
 import {Injectable} from '@angular/core';
 import {ApiService} from "./api.service";
-import {map, Observable} from "rxjs";
+import {forkJoin, map, mergeMap, Observable, of} from "rxjs";
 import {
+  SheetDataSource,
   SheetGridProperty,
   SheetsValueResponse,
   SpreadsheetMetaResponse,
   SpreadsheetSheet
 } from "../models/sheets.model";
-import {GOOGLE_SHEETS_API} from "../helpers/api.helper";
+import {GOOGLE_SHEETS_API} from "../configs/api.config";
 
 @Injectable()
 export class SheetsService {
@@ -17,7 +18,23 @@ export class SheetsService {
   ) {
   }
 
-  public getSheetMeta(): Observable<SheetGridProperty> {
+  public getSheetDataSource(skip: number, take: number): Observable<SheetDataSource> {
+    return this.getSheetGridProperty()
+      .pipe(
+        mergeMap((sheetGridProperty: SheetGridProperty) => {
+          return forkJoin([
+            this.getHeadings(),
+            this.getRows(skip, take),
+            of(sheetGridProperty)
+          ])
+        }),
+        map(([headings, rows, gridProperty]: [string[], string[][], SheetGridProperty]) => ({
+          headings, rows, totalCount: gridProperty.rowCount
+        }))
+      )
+  }
+
+  public getSheetGridProperty(): Observable<SheetGridProperty> {
     return this.apiService.getSpreadsheetMeta()
       .pipe(
         map((res: SpreadsheetMetaResponse) => {

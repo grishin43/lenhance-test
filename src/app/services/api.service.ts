@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {SheetsValueResponse, SpreadsheetMetaResponse} from "../models/sheets.model";
-import {getSpreadsheetMetaRequestUrl, getSpreadsheetSheetRowsRequestUrl} from "../helpers/api.helper";
+import {getSpreadsheetMetaRequestUrl, getSpreadsheetSheetRowsRequestUrl} from "../configs/api.config";
 
 @Injectable()
 export class ApiService {

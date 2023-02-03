@@ -12,7 +12,7 @@ export const GOOGLE_SHEETS_API = {
   SPREADSHEET_ID: '1e1mzpKFtQuJhoqXbE7j3u5QtkmCpWYf4dMujJTbe8BU',
   SHEET_ID: '1275695233',
   FIRST_CELL_PREFIX: 'A',
-  LAST_CELL_PREFIX: 'R'
+  LAST_CELL_PREFIX: 'Z'
 }
 
 export function getSpreadsheetMetaRequestUrl() {

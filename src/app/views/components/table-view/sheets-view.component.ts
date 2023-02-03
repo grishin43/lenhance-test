@@ -1,8 +1,10 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {forkJoin, mergeMap, of, Subscription} from "rxjs";
+import {Subscription} from "rxjs";
 import {SheetsService} from "../../../services/sheets.service";
-import {DEFAULT_ROWS_PER_PAGE} from "../../../helpers/table.helper";
-import {SheetGridProperty} from "../../../models/sheets.model";
+import {DEFAULT_ROWS_PER_PAGE, TABLE_CONFIG} from "../../../configs/table.config";
+import {SheetDataSource} from "../../../models/sheets.model";
+import {MatTableDataSource} from "@angular/material/table";
+import {PageEvent} from "@angular/material/paginator";
 
 @Component({
   selector: 'app-sheets-view',
@@ -12,6 +14,11 @@ import {SheetGridProperty} from "../../../models/sheets.model";
 export class SheetsViewComponent implements OnInit, OnDestroy {
   public skip: number = 0;
   public take: number = DEFAULT_ROWS_PER_PAGE;
+  public totalCount: number = 0;
+  public matTableDataSource!: MatTableDataSource<string[]>;
+  public displayedColumns!: string[];
+  public isLoading!: boolean;
+  public paginationSizeOption = TABLE_CONFIG.ROWS_PER_PAGE;
 
   private subs = new Subscription();
 
@@ -28,23 +35,50 @@ export class SheetsViewComponent implements OnInit, OnDestroy {
     this.subs.unsubscribe();
   }
 
+  public get showTableOverlay(): boolean {
+    return !this.matTableDataSource?.data?.length || this.isLoading;
+  }
+
   private initialize(): void {
+    this.isLoading = true;
     this.subs.add(
-      this.sheetsService.getSheetMeta()
-        .pipe(
-          mergeMap((res: SheetGridProperty) => {
-            return forkJoin([
-              this.sheetsService.getHeadings(),
-              this.sheetsService.getRows(this.skip, this.take),
-              of(res)
-            ])
-          })
-        ).subscribe({
-          next: (res: any) => {
-            console.log(res);
-          }
+      this.sheetsService.getSheetDataSource(this.skip, this.take)
+        .subscribe({
+          next: (dataSource: SheetDataSource) => {
+            this.displayedColumns = dataSource.headings;
+            this.totalCount = dataSource.totalCount;
+            this.matTableDataSource = new MatTableDataSource(dataSource.rows);
+            this.isLoading = false;
+          },
+          error: this.requestFailureCb
         })
     );
+  }
+
+  private requestFailureCb = () => {
+    this.totalCount = 0;
+    this.matTableDataSource = new MatTableDataSource(undefined);
+    this.isLoading = false;
+  }
+
+  public refreshData(): void {
+    this.isLoading = true;
+    this.subs.add(
+      this.sheetsService.getRows(this.skip, this.take)
+        .subscribe({
+          next: (rows: string[][]) => {
+            this.matTableDataSource = new MatTableDataSource(rows);
+            this.isLoading = false;
+          },
+          error: this.requestFailureCb
+        })
+    );
+  }
+
+  public onPageChanged(e: PageEvent): void {
+    this.skip = e.pageSize * e.pageIndex;
+    this.take = e.pageSize;
+    this.refreshData();
   }
 
 }

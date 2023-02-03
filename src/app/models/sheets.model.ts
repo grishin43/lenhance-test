@@ -27,3 +27,9 @@ export interface SheetsValueResponse {
   range: string;
   values: string[][];
 }
+
+export interface SheetDataSource {
+  headings: string[];
+  rows: any;
+  totalCount: number;
+}
