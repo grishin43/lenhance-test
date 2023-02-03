@@ -1,0 +1,5 @@
+export const TABLE_CONFIG = {
+  ROWS_PER_PAGE: [10, 25, 50, 100]
+}
+
+export const DEFAULT_ROWS_PER_PAGE = TABLE_CONFIG.ROWS_PER_PAGE[0];
