@@ -10,3 +10,7 @@
 ### Spreadsheet link:
 
 https://docs.google.com/spreadsheets/d/1e1mzpKFtQuJhoqXbE7j3u5QtkmCpWYf4dMujJTbe8BU/edit#gid=1275695233
+
+### Deployed demo:
+
+https://lenhance-test.herokuapp.com/
