@@ -20,6 +20,8 @@ export class SheetsViewComponent implements OnInit, OnDestroy {
   public isLoading!: boolean;
   public paginationSizeOption = TABLE_CONFIG.ROWS_PER_PAGE;
 
+  public readonly addExtraColumn = true;
+
   private subs = new Subscription();
 
   constructor(
@@ -42,7 +44,7 @@ export class SheetsViewComponent implements OnInit, OnDestroy {
   private initialize(): void {
     this.isLoading = true;
     this.subs.add(
-      this.sheetsService.getSheetDataSource(this.skip, this.take)
+      this.sheetsService.getSheetDataSource(this.skip, this.take, this.addExtraColumn)
         .subscribe({
           next: (dataSource: SheetDataSource) => {
             this.displayedColumns = dataSource.headings;
@@ -64,7 +66,7 @@ export class SheetsViewComponent implements OnInit, OnDestroy {
   public refreshData(): void {
     this.isLoading = true;
     this.subs.add(
-      this.sheetsService.getRows(this.skip, this.take)
+      this.sheetsService.getRows(this.skip, this.take, this.addExtraColumn)
         .subscribe({
           next: (rows: string[][]) => {
             this.matTableDataSource = new MatTableDataSource(rows);

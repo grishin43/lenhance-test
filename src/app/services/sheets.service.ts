@@ -12,19 +12,20 @@ import {GOOGLE_SHEETS_API} from "../configs/api.config";
 
 @Injectable()
 export class SheetsService {
+  private readonly extraColumnIndex = 2;
 
   constructor(
     private apiService: ApiService
   ) {
   }
 
-  public getSheetDataSource(skip: number, take: number): Observable<SheetDataSource> {
+  public getSheetDataSource(skip: number, take: number, addExtraColumn: boolean): Observable<SheetDataSource> {
     return this.getSheetGridProperty()
       .pipe(
         mergeMap((sheetGridProperty: SheetGridProperty) => {
           return forkJoin([
-            this.getHeadings(),
-            this.getRows(skip, take),
+            this.getHeadings(addExtraColumn),
+            this.getRows(skip, take, addExtraColumn),
             of(sheetGridProperty)
           ])
         }),
@@ -46,24 +47,40 @@ export class SheetsService {
       )
   }
 
-  public getHeadings(): Observable<string[]> {
+  public getHeadings(addExtraColumn: boolean): Observable<string[]> {
     const cellsRange = `${GOOGLE_SHEETS_API.FIRST_CELL_PREFIX}1:${GOOGLE_SHEETS_API.LAST_CELL_PREFIX}1`;
     return this.apiService.getSheetRows(cellsRange)
       .pipe(
         map((res: SheetsValueResponse) => {
-          return res && res.values.length ? res.values[0] : [];
+          const headings: string[] = res && res.values.length ? res.values[0] : [];
+          if (addExtraColumn && headings.length >= this.extraColumnIndex) {
+            headings.splice(this.extraColumnIndex, 0, '*EXTRA_COLUMN*');
+          }
+          return headings;
         })
       );
   }
 
-  public getRows(skip: number, take: number): Observable<string[][]> {
+  public getRows(skip: number, take: number, addExtraColumn: boolean): Observable<string[][]> {
     const startIndex = 2 + skip;
     const endIndex = 1 + skip + take;
     const cellsRange = `${GOOGLE_SHEETS_API.FIRST_CELL_PREFIX}${startIndex}:${GOOGLE_SHEETS_API.LAST_CELL_PREFIX}${endIndex}`;
     return this.apiService.getSheetRows(cellsRange)
       .pipe(
         map((res: SheetsValueResponse) => {
-          return res?.values || [];
+          const rows: string[][] = res?.values || [];
+          if (addExtraColumn && rows.length) {
+            return rows.map((row: string[]) => {
+              if (row.length >= this.extraColumnIndex) {
+                const a = row[this.extraColumnIndex - 2];
+                const b = row[this.extraColumnIndex - 1];
+                row.splice(this.extraColumnIndex, 0, `${a} ${b}`);
+              }
+              return row;
+            })
+          } else {
+            return rows;
+          }
         })
       );
   }
