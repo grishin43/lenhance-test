@@ -1,4 +1,8 @@
-<div class="mat-table-wrapper">
+<div
+  class="mat-table-wrapper"
+  [ngClass]="{
+    'overlay-enabled': showTableOverlay
+  }">
   <mat-table [dataSource]="matTableDataSource">
     <ng-container
       *ngFor="let col of displayedColumns; let i = index"
@@ -17,20 +21,17 @@
 
   </mat-table>
   <div *ngIf="showTableOverlay"
-    class="no-data">
+    class="table-overlay">
     <ng-container *ngIf="isLoading; else emptyData">
       <mat-spinner
         [diameter]="40">
       </mat-spinner>
     </ng-container>
     <ng-template #emptyData>
-      <mat-icon
-        svgIcon="wind">
-      </mat-icon>
       <h3>Data not found</h3>
       <button
         mat-flat-button
-        color="accent"
+        color="primary"
         (click)="refreshData()">
         Refresh table
       </button>
